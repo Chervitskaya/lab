@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
 	"html/template"
@@ -10,7 +9,10 @@ import (
 	"os"
 )
 
-var db *sql.DB
+type Result struct {
+	Size int
+	Cars []Car
+}
 
 func rollHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
@@ -18,14 +20,20 @@ func rollHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		books, err := dbGetBooks()
-		if err != nil {
-			log.Fatal(err)
-		}
-		t.Execute(w, books)
+
+		r.ParseForm()
+		mark := r.Form.Get("mark")
+
+		cars := getCars(mark)
+		amount := getCarAmount()
+		var res Result
+		res.Cars = cars
+		res.Size = amount
+
+		t.Execute(w, res)
 	}
 }
-func addBookHandler(w http.ResponseWriter, r *http.Request) {
+func addCarHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		t, err := template.ParseFiles("simple_form.html")
 		if err != nil {
@@ -34,29 +42,23 @@ func addBookHandler(w http.ResponseWriter, r *http.Request) {
 		t.Execute(w, nil)
 	} else {
 		r.ParseForm()
-		name := r.Form.Get("name")
+		mark := r.Form.Get("mark")
+		country := r.Form.Get("country")
+		price := r.Form.Get("price")
 		year := r.Form.Get("year")
-		length := r.Form.Get("length")
-		err := dbAddBook(name, year, length)
-		if err != nil {
-			log.Fatal(err)
-		}
+		addCar(mark, country, price, year)
 	}
 }
 func GetPort() string {
 	var port = os.Getenv("PORT")
 	if port == "" {
-		port = "5432"
+		port = "4747"
 		fmt.Println(port)
 	}
 	return ":" + port
 }
 func main() {
-	err := dbConnect()
-	if err != nil {
-		log.Fatal(err)
-	}
 	http.HandleFunc("/", rollHandler)
-	http.HandleFunc("/add", addBookHandler)
+	http.HandleFunc("/add", addCarHandler)
 	log.Fatal(http.ListenAndServe(GetPort(), nil))
 }
