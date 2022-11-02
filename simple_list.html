@@ -5,11 +5,22 @@
   <title>List</title>
 </head>
 <body>
-{{range .}}
+<form action="/" method="GET">
+  <br>
+  <div>
+    Mark:<input type="text" name="mark" style="margin-left: 20px">
+
+    <input type="submit" value="Filter"></div>
+</form>
 <br>
-Book name:{{.Name}}<br>
-Published: {{.Year}}<br>
-Length: {{.Length}}<br>
+<br>
+All cars: {{.Size}}<br>
+{{range .Cars}}
+<br>
+Mark:{{.Mark}}<br>
+Country: {{.Country}}<br>
+Price: {{.Price}}<br>
+Year: {{.Year}}<br>
 <br>
 {{end}}
 </body>
