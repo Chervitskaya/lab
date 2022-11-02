@@ -1,59 +1,44 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
+	"log"
 	_ "os"
 )
 
-type Book struct {
-	Name   string
-	Year   string
-	Length string
+type Car struct {
+	Mark string
+	Country  string
+	Price    string
+	Year     string
 }
 
-const (
-	DB_USER     = "postgres"
-	DB_PASSWORD = "postgres"
-	DB_NAME     = "books"
-)
+const size = 1000
 
-func dbConnect() error {
-	var err error
-	db, err := sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", DB_USER, DB_PASSWORD, DB_NAME))
-	if err != nil {
-		return err
-	}
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS books (book_name text,book_year text,book_length text)"); err != nil {
-		return err
-	}
-	return nil
+var carList = make([]Car, 0, size)
+
+func addCar(mark, country, price, year string) {
+	var car Car
+	car.Mark = mark
+	car.Country = country
+	car.Price = price
+	car.Year = year
+	carList = append(carList, car)
+	log.Println("New car ", car)
 }
-func dbAddBook(name, year, length string) error {
-	sqlstmt := "INSERT INTO books VALUES ($1, $2, $3)"
-	_, err := db.Exec(sqlstmt, name, year, length)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-func dbGetBooks() ([]Book, error) {
-	var books []Book
-	stmt, err := db.Prepare("SELECT book_name, book_year, book_length FROM books")
-	if err != nil {
-		return books, err
-	}
-	res, err := stmt.Query()
-	if err != nil {
-		return books, err
-	}
-	var tempBook Book
-	for res.Next() {
-		err = res.Scan(&tempBook.Name, &tempBook.Year, &tempBook.Length)
-		if err != nil {
-			return books, err
+
+func getCars(mark string) []Car {
+	log.Println("carList =  ", carList)
+	var result = make([]Car, 0, size)
+
+	for _, car := range carList {
+		if car.Mark == mark || mark == "" {
+			result = append(result, car)
 		}
-		books = append(books, tempBook)
 	}
-	return books, err
+
+	return result
+}
+
+func getCarAmount() int {
+	return len(carList)
 }
